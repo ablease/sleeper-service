@@ -17,17 +17,21 @@ type SleepyResponse struct {
 }
 
 func AttachRoutes(r *mux.Router) {
-	r.HandleFunc("/comms", SleepyMessage).Methods("GET")
+	r.HandleFunc("/comms", sleepyMessage).Methods("GET")
 }
 
-func SleepyMessage(w http.ResponseWriter, r *http.Request) {
-	var response SleepyResponse
-	response = SleepyResponse{
+func sleepyMessage(w http.ResponseWriter, r *http.Request) {
+	response := SleepyResponse{
 		Level: "INFO",
 		Msg:   "you have reached the sleepy service",
 		Time:  time.Now(),
 	}
-	resp, _ := json.Marshal(response)
+
+	resp, err := json.Marshal(response)
+	if err != nil {
+		fmt.Errorf("error marshalling response: %v", err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(resp), r.URL.Path[1:])
