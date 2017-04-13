@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"encoding/json"
+
 	"github.com/ablease/sleeper-service/sleeperservice"
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
@@ -12,9 +14,7 @@ import (
 )
 
 var _ = Describe("SleeperService", func() {
-	var (
-		server *httptest.Server
-	)
+	var server *httptest.Server
 
 	BeforeEach(func() {
 		router := mux.NewRouter()
@@ -34,9 +34,14 @@ var _ = Describe("SleeperService", func() {
 			commsResp, err = http.Get(fmt.Sprintf("%s/comms", server.URL))
 		})
 
-		It("responsds with a good status code", func() {
+		It("responds with a good status code", func() {
 			Expect(commsResp.StatusCode).To(Equal(http.StatusOK))
 		})
 
+		It("responds with a sleepy message", func() {
+			var responseBody sleeperservice.SleepyResponse
+			Expect(json.NewDecoder(commsResp.Body).Decode(&responseBody)).To(Succeed())
+			Expect(responseBody.Msg).To(ContainSubstring("you have reached the sleepy service"))
+		})
 	})
 })
